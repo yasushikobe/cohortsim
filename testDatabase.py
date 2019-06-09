@@ -1,31 +1,40 @@
 import unittest
+import pandas
 
 from Database import Database
 
 
 class TestDatabase(unittest.TestCase):
 
+    def setUp(self):
+        self.PATIENTCOUNT = 1000
+        self.OBSERVATIONYEARS = 10
+        self.INCIDENCE = 0.010
+        self.ELECTPATIENTCOUNT = 100
+        self.database = self.__createDatabase(self.INCIDENCE, self.PATIENTCOUNT, self.OBSERVATIONYEARS)
+
     def testCreateDatabase(self):
-        PATIENTCOUNT = 1000
-        OBSERVATIONYEARS = 10
-        INCIDENCE = 0.010
-        database = self.__createDatabase(INCIDENCE, PATIENTCOUNT, OBSERVATIONYEARS)
-        self.assertEqual(database.incidence, INCIDENCE)
-        self.assertEqual(database.observationYears, OBSERVATIONYEARS)
-        self.assertEqual(database.patientCount, PATIENTCOUNT)
-        self.assertEqual(database.data.shape, (PATIENTCOUNT, OBSERVATIONYEARS))
+        self.assertEqual(self.database.incidence, self.INCIDENCE)
+        self.assertEqual(self.database.observationYears, self.OBSERVATIONYEARS)
+        self.assertEqual(self.database.patientCount, self.PATIENTCOUNT)
+        self.assertEqual(self.database.data.shape, (self.PATIENTCOUNT, self.OBSERVATIONYEARS))
 
     def testElectCohort(self):
-        PATIENTCOUNT = 1000
-        OBSERVATIONYEARS = 10
-        INCIDENCE = 0.010
-        ELECTPATIENTCOUNT = 100
-        database = self.__createDatabase(INCIDENCE, PATIENTCOUNT, OBSERVATIONYEARS)
-        cohort = database.electCohort(ELECTPATIENTCOUNT)
-        self.assertEqual(cohort.incidence, INCIDENCE)
-        self.assertEqual(cohort.observationYears, OBSERVATIONYEARS)
-        self.assertEqual(cohort.patientCount, ELECTPATIENTCOUNT)
-        self.assertEqual(cohort.data.shape, (ELECTPATIENTCOUNT, OBSERVATIONYEARS))
+        cohort = self.database.electCohort(self.ELECTPATIENTCOUNT)
+        self.assertEqual(cohort.incidence, self.INCIDENCE)
+        self.assertEqual(cohort.observationYears, self.OBSERVATIONYEARS)
+        self.assertEqual(cohort.patientCount, self.ELECTPATIENTCOUNT)
+        self.assertEqual(cohort.data.shape, (self.ELECTPATIENTCOUNT, self.OBSERVATIONYEARS))
+
+    def testGetOnsetDataFrame(self):
+        onsetDataFrame = self.database.getOnsetDataFrame()
+        self.assertIs(type(onsetDataFrame), pandas.core.frame.DataFrame)
+        self.assertEqual(onsetDataFrame.index.size, 10)
+
+    def testGetRateTheory(self):
+        rateTheory = self.database.getRateTheory()
+        self.assertIs(type(rateTheory), pandas.core.frame.DataFrame)
+        self.assertEqual(rateTheory.index.size, 10)
 
     def __createDatabase(self, incidence, patientCount, observationYears) -> 'Database':
         return Database(incidence, patientCount, observationYears)
